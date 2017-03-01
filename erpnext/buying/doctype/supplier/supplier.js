@@ -38,7 +38,16 @@ frappe.ui.form.on("Supplier", {
 			frm.add_custom_button(__('Accounts Payable'), function() {
 				frappe.set_route('query-report', 'Accounts Payable', {supplier:frm.doc.name});
 			});
-
+			frm.add_custom_button(__('Vendor Evaluation'), function() {
+				if(!frm.is_new())
+				{
+					frappe.set_route("List", "Vendor Evaluation", {"supplier": frm.doc.name});
+				}
+				else
+				{
+				frappe.new_doc("Vendor Evaluation", true);
+				}
+			});
 			// indicators
 			erpnext.utils.set_party_dashboard_indicators(frm);
 		}
