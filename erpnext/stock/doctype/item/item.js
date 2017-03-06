@@ -376,3 +376,10 @@ $.extend(erpnext.item, {
 		frm.fields_dict.attributes.grid.toggle_enable("attribute_value", !frm.doc.variant_of);
 	}
 });
+cur_frm.fields_dict["category"].get_query = function(doc) {
+	return {
+		filters: {
+			"category": cur_frm.doc.brand
+		}
+	}
+}
