@@ -509,6 +509,8 @@ def make_stock_entry(production_order_id, purpose, qty=None):
 		stock_entry.set("additional_costs", additional_costs)
 
 	stock_entry.get_items()
+	stock_entry.docstatus=1
+	stock_entry.save()
 	return stock_entry.as_dict()
 
 @frappe.whitelist()

@@ -240,7 +240,7 @@ $.extend(cur_frm.cscript, {
 			flt(this.frm.doc.qty) - flt(this.frm.doc.material_transferred_for_manufacturing);
 
 		frappe.prompt({fieldtype:"Float", label: __("Qty for {0}", [purpose]), fieldname:"qty",
-			description: __("Max: {0}", [max]), 'default': max },
+			description: __("Max: {0}", [max]), 'default': max, 'read_only':1 },
 			function(data) {
 				if(data.qty > max) {
 					frappe.msgprint(__("Quantity must not be more than {0}", [max]));
