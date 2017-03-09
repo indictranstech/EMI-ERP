@@ -39,7 +39,7 @@ frappe.query_reports["Stock Ledger"] = {
 		},
 		{
 			"fieldname":"brand",
-			"label": __("Brand"),
+			"label": __("Category"),
 			"fieldtype": "Link",
 			"options": "Brand"
 		},
@@ -47,12 +47,6 @@ frappe.query_reports["Stock Ledger"] = {
 			"fieldname":"voucher_no",
 			"label": __("Voucher #"),
 			"fieldtype": "Data"
-		},
-		{
-			"fieldname":"category",
-			"label": __("Category"),
-			"fieldtype": "Link",
-			"options": "Category"
 		},
 		{
 			"fieldname":"sub_category",

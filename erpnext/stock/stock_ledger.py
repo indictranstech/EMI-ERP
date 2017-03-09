@@ -419,6 +419,7 @@ def get_stock_ledger_entries(previous_sle, operator=None, order="desc", limit=No
 			"order": order
 		}, previous_sle, as_dict=1, debug=debug)
 
+
 def get_valuation_rate(item_code, warehouse, voucher_type, voucher_no, allow_zero_rate=False):
 	# Get valuation rate from last sle for the same item and warehouse
 	last_valuation_rate = frappe.db.sql("""select valuation_rate

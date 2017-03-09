@@ -379,7 +379,7 @@ $.extend(erpnext.item, {
 cur_frm.fields_dict["sub_category"].get_query = function(doc) {
 	return {
 		filters: {
-			"category": cur_frm.doc.category
+			"category": cur_frm.doc.brand
 		}
 	}
 }
