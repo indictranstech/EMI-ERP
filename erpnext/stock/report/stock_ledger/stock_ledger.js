@@ -48,17 +48,24 @@ frappe.query_reports["Stock Ledger"] = {
 			"label": __("Voucher #"),
 			"fieldtype": "Data"
 		},
-		{
+				{
 			"fieldname":"sub_category",
 			"label": __("Sub Category"),
 			"fieldtype": "Link",
-			"options": "Sub Category"
+			"options": "Sub Category",
+			"get_query": function() {
+				var brand = frappe.query_report_filters_by_name.brand.get_value();
+				// console.log("--------brand",brand)
+
+				return {
+					"doctype": "Sub Category",
+					"filters": {
+						"category": brand,
+					}
+				}
+			}
 		}
+		
 	]
 }
 
-// $(function() {
-// 	$(wrapper).bind("show", function() {
-// 		frappe.query_report.load();
-// 	});
-// });

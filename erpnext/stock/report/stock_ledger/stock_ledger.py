@@ -20,7 +20,7 @@ def execute(filters=None):
 		item_detail = item_details[sle.item_code]
 
 		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group,
-			item_detail.brand, item_detail.description, sle.warehouse,
+			item_detail.brand, item_detail.sub_category, item_detail.description, sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
@@ -30,7 +30,7 @@ def execute(filters=None):
 
 def get_columns():
 	return [_("Date") + ":Datetime:95", _("Item") + ":Link/Item:130", _("Item Name") + "::100", _("Item Group") + ":Link/Item Group:100",
-		_("Brand") + ":Link/Brand:100", _("Description") + "::200", _("Warehouse") + ":Link/Warehouse:100",
+		_("Category") + ":Link/Brand:100",_("Sub Category") + ":Link/Brand:100", _("Description") + "::200", _("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("Valuation Rate") + ":Currency:110", _("Balance Value") + ":Currency:110",
 		_("Voucher Type") + "::110", _("Voucher #") + ":Dynamic Link/"+_("Voucher Type")+":100", _("Batch") + ":Link/Batch:100",
@@ -46,13 +46,13 @@ def get_stock_ledger_entries(filters):
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			order by posting_date asc, posting_time asc, name asc"""\
-		.format(sle_conditions=get_sle_conditions(filters)), filters, as_dict=1)
+		.format(sle_conditions=get_sle_conditions(filters)), filters, as_dict=1, debug=1)
 
 def get_item_details(filters):
 	item_details = {}
 	for item in frappe.db.sql("""select name, item_name, description, item_group,
-			brand, stock_uom from `tabItem` {item_conditions}"""\
-			.format(item_conditions=get_item_conditions(filters)), filters, as_dict=1):
+			brand, sub_category, stock_uom from `tabItem` {item_conditions}"""\
+			.format(item_conditions=get_item_conditions(filters)), filters, as_dict=1,debug=1):
 		item_details.setdefault(item.name, item)
 
 	return item_details
@@ -62,11 +62,13 @@ def get_item_conditions(filters):
 	if filters.get("item_code"):
 		conditions.append("name=%(item_code)s")
 	if filters.get("brand"):
-		conditions.append("brand=%(brand)s")
-
+		conditions.append("brand=%(brand)s")		
+	if filters.get("sub_category"):
+		conditions.append("sub_category=%(sub_category)s")
+	
 	return "where {}".format(" and ".join(conditions)) if conditions else ""
 
-def get_sle_conditions(filters):
+def get_sle_conditions(filters):	
 	conditions = []
 	item_conditions=get_item_conditions(filters)
 	if item_conditions:
@@ -106,3 +108,5 @@ def get_warehouse_condition(warehouse):
 			warehouse_details.rgt)
 
 	return ''
+
+
