@@ -350,9 +350,13 @@ def make_material_request(source_name, target_doc=None):
 	doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Material Request",
+			"field_map": {
+			"client_name":"requested_by",
+			},
 			"validation": {
 				"docstatus": ["=", 1]
 			}
+
 		},
 		"Packed Item": {
 			"doctype": "Material Request Item",
@@ -372,7 +376,6 @@ def make_material_request(source_name, target_doc=None):
 			"postprocess": update_item
 		}
 	}, target_doc, postprocess)
-
 	return doc
 
 @frappe.whitelist()

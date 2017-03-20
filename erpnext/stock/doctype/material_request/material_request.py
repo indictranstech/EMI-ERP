@@ -390,6 +390,7 @@ def raise_production_orders(material_request):
 				prod_order.material_request_item = d.name
 				prod_order.planned_start_date = mr.transaction_date
 				prod_order.company = mr.company
+				prod_order.requested_for = mr.requested_by
 				prod_order.save()
 				production_orders.append(prod_order.name)
 			else:
