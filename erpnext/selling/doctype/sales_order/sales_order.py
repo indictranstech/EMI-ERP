@@ -351,7 +351,7 @@ def make_material_request(source_name, target_doc=None):
 		"Sales Order": {
 			"doctype": "Material Request",
 			"field_map": {
-			"client_name":"requested_by",
+			"customer":"requested_by",
 			},
 			"validation": {
 				"docstatus": ["=", 1]
