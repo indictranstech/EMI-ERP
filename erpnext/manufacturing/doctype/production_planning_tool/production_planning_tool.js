@@ -2,7 +2,6 @@
 // License: GNU General Public License v3. See license.txt
 
 
-
 cur_frm.cscript.onload = function(doc) {
 	cur_frm.set_value("company", frappe.defaults.get_user_default("Company"))
 }
@@ -11,6 +10,7 @@ cur_frm.cscript.refresh = function(doc) {
 	cur_frm.disable_save();
 }
 
+cur_frm.add_fetch("material_request", "requested_by", "requested_for");
 cur_frm.add_fetch("material_request", "transaction_date", "material_request_date");
 
 cur_frm.add_fetch("sales_order", "transaction_date", "sales_order_date");
