@@ -343,20 +343,22 @@ def close_or_unclose_sales_orders(names, status):
 def make_material_request(source_name, target_doc=None):
 	def postprocess(source, doc):
 		doc.material_request_type = "Purchase"
+		
 
 	def update_item(source, target, source_parent):
-		target.project = source_parent.project
+		target.project = source_parent.project,
+		target.schedule_date = source_parent.delivery_date
+	
+	def update_requested_by(source, target, source_parent):
+		target.requested_by = source.customer +"-"+ source.po_no
 
 	doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Material Request",
-			"field_map": {
-			"customer":"requested_by",
-			},
 			"validation": {
 				"docstatus": ["=", 1]
-			}
-
+			},
+			"postprocess": update_requested_by
 		},
 		"Packed Item": {
 			"doctype": "Material Request Item",
@@ -397,7 +399,6 @@ def make_delivery_note(source_name, target_doc=None):
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
-
 	target_doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Delivery Note",
