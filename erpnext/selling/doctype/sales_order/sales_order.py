@@ -346,7 +346,7 @@ def make_material_request(source_name, target_doc=None):
 		
 
 	def update_item(source, target, source_parent):
-		target.project = source_parent.project,
+		#target.project = source_parent.project,
 		target.schedule_date = source_parent.delivery_date
 	
 	def update_requested_by(source, target, source_parent):
