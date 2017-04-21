@@ -341,6 +341,7 @@ class JournalEntry(AccountsController):
 
 	def create_remarks(self):
 		r = []
+		re = []
 		if self.cheque_no:
 			if self.cheque_date:
 				r.append(_('Reference #{0} dated {1}').format(self.cheque_no, formatdate(self.cheque_date)))
@@ -367,9 +368,15 @@ class JournalEntry(AccountsController):
 			if d.reference_type == "Purchase Order" and d.debit:
 				r.append(_("{0} against Purchase Order {1}").format(fmt_money(flt(d.credit), currency = self.company_currency), \
 					d.reference_name))
+		#Sagar Added the Bill_no,Bill_date,Due_date in Reference
+		re.append(self.bill_no) if self.bill_no else ""
+		re.append(self.bill_date) if self.bill_date else ""
+		re.append(self.due_date) if self.due_date else ""
+		re_bill = ','.join(re)
 
-		if self.user_remark:
+		if self.user_remark :
 			r.append(_("Note: {0}").format(self.user_remark))
+			r.append(re_bill)
 
 		if r:
 			self.remark = ("\n").join(r) #User Remarks is not mandatory

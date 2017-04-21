@@ -72,6 +72,7 @@ class ReceivablePayableReport(object):
 		})
 		if args.get("party_type") == "Customer":
 			columns += [_("Territory") + ":Link/Territory:80"]
+			columns += [_("Sales Team") + ":Link/Territory:80"]
 		if args.get("party_type") == "Supplier":
 			columns += [_("Supplier Type") + ":Link/Supplier Type:80"]
 			
@@ -140,10 +141,18 @@ class ReceivablePayableReport(object):
 					# customer territory / supplier type
 					if args.get("party_type") == "Customer":
 						row += [self.get_territory(gle.party)]
+						
+					#append Sales_team
+						s_t=get_sales_team_data(gle.voucher_no)
+						ws=[]
+						for k in s_t:
+							ws.append(k.get("sales_person"))
+						row+=[','.join(ws)]
 					if args.get("party_type") == "Supplier":
 						row += [self.get_supplier_type(gle.party)]
 
 					row.append(gle.remarks)
+					print("3",row)
 					data.append(row)
 
 		return data
@@ -309,3 +318,6 @@ def get_ageing_data(first_range, second_range, third_range, age_as_on, entry_dat
 	outstanding_range[index] = outstanding_amount
 
 	return [age] + outstanding_range
+
+def get_sales_team_data(voucher_no):
+	return frappe.db.sql("select sales_person from `tabSales Team` where parent='{0}'".format(voucher_no),as_dict=1)

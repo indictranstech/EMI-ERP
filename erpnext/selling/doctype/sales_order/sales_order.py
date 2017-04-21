@@ -350,7 +350,8 @@ def make_material_request(source_name, target_doc=None):
 		target.schedule_date = source_parent.delivery_date
 	
 	def update_requested_by(source, target, source_parent):
-		target.requested_by = source.customer +"-"+ source.po_no
+		#Sagar Added Requested For
+		target.requested_by = source.customer +"-"+ source.po_no +"-"+source.project
 
 	doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {

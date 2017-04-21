@@ -89,12 +89,12 @@ class ProductionPlanningTool(Document):
 			item_filter += " and mr_item.item_code = %(item)s"
 
 		pending_mr = frappe.db.sql("""
-			select distinct mr.name, mr.transaction_date
+			select distinct mr.name, mr.transaction_date,mr.requested_by
 			from `tabMaterial Request` mr, `tabMaterial Request Item` mr_item
 			where mr_item.parent = mr.name
 				and mr.material_request_type = "Manufacture"
 				and mr.docstatus = 1
-				and mr_item.qty > ifnull(mr_item.ordered_qty,0) {0} {1}
+				and mr_item.qty >= ifnull(mr_item.ordered_qty,0) {0} {1}
 				and (exists (select name from `tabBOM` bom where bom.item=mr_item.item_code
 					and bom.is_active = 1))
 			""".format(mr_filter, item_filter), {
@@ -116,6 +116,7 @@ class ProductionPlanningTool(Document):
 				mr = self.append('material_requests', {})
 				mr.material_request = r['name']
 				mr.material_request_date = cstr(r['transaction_date'])
+				mr.requested_for = r["requested_by"]
 
 	def get_items(self):
 		if self.get_items_from == "Sales Order":
@@ -168,9 +169,9 @@ class ProductionPlanningTool(Document):
 			item_condition = ' and mr_item.item_code = "' + frappe.db.escape(self.fg_item, percent=False) + '"'
 
 		items = frappe.db.sql("""select distinct parent, name, item_code, warehouse,
-			(qty - ordered_qty) as pending_qty
+			(qty - ordered_qty) as pending_qty,sales_order
 			from `tabMaterial Request Item` mr_item
-			where parent in (%s) and docstatus = 1 and qty > ordered_qty
+			where parent in (%s) and docstatus = 1 and qty >= ordered_qty
 			and exists (select name from `tabBOM` bom where bom.item=mr_item.item_code
 				and bom.is_active = 1) %s""" % \
 			(", ".join(["%s"] * len(mr_list)), item_condition), tuple(mr_list), as_dict=1)
@@ -191,11 +192,13 @@ class ProductionPlanningTool(Document):
 			pi.planned_qty				= flt(p['pending_qty'])
 			pi.pending_qty				= flt(p['pending_qty'])
 
+
 			if self.get_items_from == "Sales Order":
 				pi.sales_order		= p['parent']
 			elif self.get_items_from == "Material Request":
 				pi.material_request		= p['parent']
 				pi.material_request_item = p['name']
+				pi.sales_order = p["sales_order"]
 
 	def validate_data(self):
 		self.validate_company()
@@ -249,7 +252,8 @@ class ProductionPlanningTool(Document):
 				"wip_warehouse"			: "",
 				"fg_warehouse"			: d.warehouse,
 				"status"				: "Draft",
-				"project"			: frappe.db.get_value("Sales Order", d.sales_order, "project")
+				"project"				: frappe.db.get_value("Sales Order", d.sales_order, "project"),
+				"requested_for"			: frappe.db.get_value("Material Request", d.material_request, "requested_by")
 			}
 
 			""" Club similar BOM and item for processing in case of Sales Orders """

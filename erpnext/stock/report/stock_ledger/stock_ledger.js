@@ -53,10 +53,9 @@ frappe.query_reports["Stock Ledger"] = {
 			"label": __("Sub Category"),
 			"fieldtype": "Link",
 			"options": "Sub Category",
+			/*Added the Sub Category Filter in Stock Ledger*/ 
 			"get_query": function() {
 				var brand = frappe.query_report_filters_by_name.brand.get_value();
-				// console.log("--------brand",brand)
-
 				return {
 					"doctype": "Sub Category",
 					"filters": {
