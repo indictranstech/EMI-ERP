@@ -139,8 +139,8 @@ erpnext.production_order = {
 
 			if ((flt(doc.produced_qty) < flt(doc.material_transferred_for_manufacturing)) && frm.doc.status != 'Stopped') {
 				var btn = frm.add_custom_button(__('Finish'),
+					
 					cur_frm.cscript['Update Finished Goods']);
-					/*cur_frm.add_fetch('production_order', 'requested_for', 'requested_for')*/
 
 				if(doc.material_transferred_for_manufacturing==doc.qty) {
 					// all materials transferred for manufacturing,

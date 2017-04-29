@@ -286,6 +286,7 @@ class ProductionPlanningTool(Document):
 
 		try:
 			pro.insert()
+			pro.submit()
 			return pro.name
 		except OverProductionError:
 			pass
