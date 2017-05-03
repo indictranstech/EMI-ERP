@@ -501,18 +501,59 @@ def make_stock_entry(production_order_id, purpose, qty=None):
 			stock_entry.from_warehouse = production_order.source_warehouse
 		stock_entry.to_warehouse = production_order.wip_warehouse
 		stock_entry.project = production_order.project
+		stock_entry.get_items()
 	else:
-		stock_entry.from_warehouse = production_order.wip_warehouse
-		stock_entry.to_warehouse = production_order.fg_warehouse
-		stock_entry.requested_for=production_order.requested_for
-		additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
-		stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
-		stock_entry.set("additional_costs", additional_costs)
+		po_black=frappe.db.get("Job Card",{"production_order":production_order_id},["black_material"])
+		f_store="Factory Store - E"
+		# Material Transfer Entry
+		if po_black["black_material"]=="Yes":
+			stock_entry1 = frappe.new_doc("Stock Entry")
+			stock_entry1.purpose = "Material Transfer"
+			stock_entry1.production_order = production_order_id
+			stock_entry1.company = production_order.company
+			stock_entry1.from_bom = 1
+			stock_entry1.bom_no = production_order.bom_no
+			stock_entry1.use_multi_level_bom = production_order.use_multi_level_bom
+			stock_entry1.fg_completed_qty = qty or (flt(production_order.qty) - flt(production_order.produced_qty))
+			if production_order.source_warehouse:
+				stock_entry1.from_warehouse = production_order.source_warehouse
+			stock_entry1.to_warehouse = f_store
+			stock_entry1.project = production_order.project
+			stock_entry1.get_items()
+			stock_entry1.docstatus=1
+			stock_entry1.save()
 
-	stock_entry.get_items()
+			# Manufactuer Entry
+			stock_entry.from_warehouse =f_store
+			stock_entry.to_warehouse = production_order.fg_warehouse
+			stock_entry.requested_for=production_order.requested_for
+			additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
+			stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
+			stock_entry.set("additional_costs", additional_costs)
+			stock_entry.get_items()
+			update_warehouse(stock_entry)
+		else:
+			stock_entry.from_warehouse = production_order.wip_warehouse
+			stock_entry.to_warehouse = production_order.fg_warehouse
+			stock_entry.requested_for=production_order.requested_for
+			additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
+			stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
+			stock_entry.set("additional_costs", additional_costs)
+			stock_entry.get_items()
+	
 	stock_entry.docstatus=1
 	stock_entry.save()
 	return stock_entry.as_dict()
+	
+# Set Warehouse in Child Table
+def update_warehouse(stock_entry):
+	items = stock_entry.items
+	for row in items:
+		if row.s_warehouse:
+			row.s_warehouse = "Factory Store - E"
+
+		
+
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
