@@ -486,6 +486,7 @@ def check_if_scrap_warehouse_mandatory(bom_no):
 
 @frappe.whitelist()
 def make_stock_entry(production_order_id, purpose, qty=None,name=None):
+	f_store = "Factory Store - E"
 	print("##############################################################")
 	production_order = frappe.get_doc("Production Order", production_order_id)
 
@@ -513,8 +514,7 @@ def make_stock_entry(production_order_id, purpose, qty=None,name=None):
 		# po_black=frappe.db.get("Job Card",{"production_order":production_order_id},["black_material"])
 		# job_card=frappe.get_doc("Job Card",name)
 		po_black=frappe.db.get_values("Job Order Detail",{"parent":name,"black_material":"Yes"},"process")
-		print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",po_black[0])
-		f_store="Factory Store - E"
+		# print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",po_black[0])
 		# Material Transfer Entry
 		if po_black:
 			exists_se=frappe.db.get_value("Stock Entry",{"job_card":name},"name")
@@ -538,20 +538,19 @@ def make_stock_entry(production_order_id, purpose, qty=None,name=None):
 
 		# Manufactuer Entry
 		print("hiiiiiiiiiiiiiiiiiiii in in in Manufactuer")
-		stock_entry.from_warehouse =f_store
+		# stock_entry.from_warehouse =f_store
+		stock_entry.from_warehouse = production_order.wip_warehouse
 		stock_entry.to_warehouse = production_order.fg_warehouse
 		stock_entry.requested_for=production_order.requested_for
 		additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
 		stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
 		stock_entry.set("additional_costs", additional_costs)
-		stock_entry.posting_time = '{:%H:%M:%S}'.format(datetime.now() + timedelta(seconds=19))#datetime.now().time() + timedelta(hours=1)
 		stock_entry.get_items()
-		update_warehouse(stock_entry)
+		update_warehouse(stock_entry, f_store, po_black= po_black)
 		stock_entry.docstatus=1
 		stock_entry.save()
 		print("In MFG***************************************")
 		# else:
-		# 	stock_entry.from_warehouse = production_order.wip_warehouse
 		# 	stock_entry.to_warehouse = production_order.fg_warehouse
 		# 	stock_entry.requested_for=production_order.requested_for
 		# 	additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
@@ -564,18 +563,21 @@ def make_stock_entry(production_order_id, purpose, qty=None,name=None):
 	return stock_entry.as_dict()
 	
 # Set Warehouse in Child Table
-def update_warehouse(stock_entry):
-	print("hiiiiiiiiiiiiiiiiiiii in update_warehouse")
-	items = stock_entry.items
-	for row in items:
-		if row.s_warehouse:
-			row.s_warehouse = "Factory Store - E"
+def update_warehouse(stock_entry, f_store, po_black= None):
+	# print("hiiiiiiiiiiiiiiiiiiii in update_warehouse")
+	if po_black:
+		print po_black, "------------------- inside po_black"
+		stock_entry.posting_time = '{:%H:%M:%S}'.format(datetime.now() + timedelta(seconds=19))#datetime.now().time() + timedelta(hours=1)
+		stock_entry.from_warehouse = f_store
+		items = stock_entry.items
+		for row in items:
+			if row.s_warehouse:
+				row.s_warehouse = f_store
 
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
 	"""Returns events for Gantt / Calendar view rendering.
-
 	:param start: Start date-time.
 	:param end: End date-time.
 	:param filters: Filters (JSON).
