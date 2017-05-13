@@ -235,7 +235,6 @@ $.extend(cur_frm.cscript, {
 	},
 
 	make_se: function(purpose) {
-		console.log("########")
 		var me = this;
 		var max = (purpose === "Manufacture") ?
 			flt(this.frm.doc.material_transferred_for_manufacturing) - flt(this.frm.doc.produced_qty) :

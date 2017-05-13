@@ -485,9 +485,8 @@ def check_if_scrap_warehouse_mandatory(bom_no):
 	return res
 
 @frappe.whitelist()
-def make_stock_entry(production_order_id, purpose, qty=None,name=None):
-	f_store = "Factory Store - E"
-	print("##############################################################")
+def make_stock_entry(production_order_id, purpose, qty=None, name=None):
+	print "in original make stock entry___________"
 	production_order = frappe.get_doc("Production Order", production_order_id)
 
 	stock_entry = frappe.new_doc("Stock Entry")
@@ -498,75 +497,25 @@ def make_stock_entry(production_order_id, purpose, qty=None,name=None):
 	stock_entry.bom_no = production_order.bom_no
 	stock_entry.use_multi_level_bom = production_order.use_multi_level_bom
 	stock_entry.fg_completed_qty = qty or (flt(production_order.qty) - flt(production_order.produced_qty))
-	print("hiiiiiiiiiiiiiiiiiiii in in make SE")
+
 	if purpose=="Material Transfer for Manufacture":
 		if production_order.source_warehouse:
 			stock_entry.from_warehouse = production_order.source_warehouse
 		stock_entry.to_warehouse = production_order.wip_warehouse
 		stock_entry.project = production_order.project
-		stock_entry.get_items()
-		stock_entry.docstatus=1
-		stock_entry.save()
-		print("hiiiiiiiiiiiiiiiiiiii in in IF")
 	else:
-		
-		print("hiiiiiiiiiiiiiiiiiiii in in in IF else loop")
-		# po_black=frappe.db.get("Job Card",{"production_order":production_order_id},["black_material"])
-		# job_card=frappe.get_doc("Job Card",name)
-		po_black=frappe.db.get_values("Job Order Detail",{"parent":name,"black_material":"Yes"},"process")
-		# print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",po_black[0])
-		# Material Transfer Entry
-		if po_black:
-			exists_se=frappe.db.get_value("Stock Entry",{"job_card":name},"name")
-			if not exists_se:
-				stock_entry1 = frappe.new_doc("Stock Entry")
-				stock_entry1.purpose = "Material Transfer"
-				stock_entry1.job_card=name
-				stock_entry1.production_order = production_order_id
-				stock_entry1.company = production_order.company
-				stock_entry1.from_bom = 1
-				stock_entry1.bom_no = production_order.bom_no
-				stock_entry1.use_multi_level_bom = production_order.use_multi_level_bom
-				stock_entry1.fg_completed_qty = qty or (flt(production_order.qty) - flt(production_order.produced_qty))
-				if production_order.source_warehouse:
-					stock_entry1.from_warehouse = production_order.source_warehouse
-				stock_entry1.to_warehouse = f_store
-				stock_entry1.project = production_order.project
-				stock_entry1.get_items()
-				stock_entry1.docstatus=1
-				stock_entry1.save()
-
-		# Manufactuer Entry
-		print("hiiiiiiiiiiiiiiiiiiii in in in Manufactuer")
-		# stock_entry.from_warehouse =f_store
 		stock_entry.from_warehouse = production_order.wip_warehouse
 		stock_entry.to_warehouse = production_order.fg_warehouse
-		stock_entry.requested_for=production_order.requested_for
 		additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
 		stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
 		stock_entry.set("additional_costs", additional_costs)
-		stock_entry.get_items()
-		update_warehouse(stock_entry, f_store, po_black= po_black)
-		stock_entry.docstatus=1
-		stock_entry.save()
-		print("In MFG***************************************")
-		# else:
-		# 	stock_entry.to_warehouse = production_order.fg_warehouse
-		# 	stock_entry.requested_for=production_order.requested_for
-		# 	additional_costs = get_additional_costs(production_order, fg_qty=stock_entry.fg_completed_qty)
-		# 	stock_entry.project = frappe.db.get_value("Stock Entry",{"production_order": production_order_id,"purpose": "Material Transfer for Manufacture"}, "project")
-		# 	stock_entry.set("additional_costs", additional_costs)
-		# 	stock_entry.get_items()
-		# 	print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&join	")
-			
 
+	stock_entry.get_items()
 	return stock_entry.as_dict()
 	
 # Set Warehouse in Child Table
 def update_warehouse(stock_entry, f_store, po_black= None):
-	# print("hiiiiiiiiiiiiiiiiiiii in update_warehouse")
 	if po_black:
-		print po_black, "------------------- inside po_black"
 		stock_entry.posting_time = '{:%H:%M:%S}'.format(datetime.now() + timedelta(seconds=19))#datetime.now().time() + timedelta(hours=1)
 		stock_entry.from_warehouse = f_store
 		items = stock_entry.items
