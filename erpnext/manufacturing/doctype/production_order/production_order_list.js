@@ -12,7 +12,9 @@ frappe.listview_settings['Production Order'] = {
 				"Not Started": "red",
 				"In Process": "orange",
 				"Completed": "green",
-				"Cancelled": "darkgrey"
+				"Cancelled": "darkgrey",
+				"Inspection In Progress": "orange",
+				"Inspection Finished": "green"
 			}[doc.status], "status,=," + doc.status];
 		}
 	}
