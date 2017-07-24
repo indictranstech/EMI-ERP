@@ -371,7 +371,8 @@ def make_sales_invoice(source_name, target_doc=None):
 			"doctype": "Sales Invoice",
 			"field_map": {
 				"customers_purchase_order": "customer_po_no",
-				"name": "delivery_note"
+				"name": "delivery_note",
+				"posting_date":"delivery_date"
 				},
 			"validation": {
 				"docstatus": ["=", 1]
