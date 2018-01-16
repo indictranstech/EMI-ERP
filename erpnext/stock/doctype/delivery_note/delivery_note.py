@@ -97,7 +97,7 @@ class DeliveryNote(SellingController):
 		super(DeliveryNote, self).validate()
 		self.set_status()
 		self.so_required()
-		self.validate_proj_cust()
+		#self.validate_proj_cust()
 		self.check_close_sales_order("against_sales_order")
 		self.validate_for_items()
 		self.validate_warehouse()
@@ -127,14 +127,14 @@ class DeliveryNote(SellingController):
 			self.validate_rate_with_reference_doc([["Sales Order", "against_sales_order", "so_detail"],
 				["Sales Invoice", "against_sales_invoice", "si_detail"]])
 
-	def validate_proj_cust(self):
-		"""check for does customer belong to same project as entered.."""
-		if self.project and self.customer:
-			res = frappe.db.sql("""select name from `tabProject`
-				where name = %s and (customer = %s or
-					ifnull(customer,'')='')""", (self.project, self.customer))
-			if not res:
-				frappe.throw(_("Customer {0} does not belong to project {1}").format(self.customer, self.project))
+	# def validate_proj_cust(self):
+	# 	"""check for does customer belong to same project as entered.."""
+	# 	if self.project and self.customer:
+	# 		res = frappe.db.sql("""select name from `tabProject`
+	# 			where name = %s and (customer = %s or
+	# 				ifnull(customer,'')='')""", (self.project, self.customer))
+	# 		if not res:
+	# 			frappe.throw(_("Customer {0} does not belong to project {1}").format(self.customer, self.project))
 
 	def validate_for_items(self):
 		check_list, chk_dupl_itm = [], []
