@@ -54,7 +54,7 @@ class SalesInvoice(SellingController):
 		super(SalesInvoice, self).validate()
 		self.validate_posting_time()
 		self.so_dn_required()
-		self.validate_proj_cust()
+		#self.validate_proj_cust()
 		self.validate_with_previous_doc()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.check_close_sales_order("sales_order")
@@ -380,14 +380,14 @@ class SalesInvoice(SellingController):
 						msgprint(_("{0} is mandatory for Item {1}").format(i,d.item_code), raise_exception=1)
 
 
-	def validate_proj_cust(self):
-		"""check for does customer belong to same project as entered.."""
-		if self.project and self.customer:
-			res = frappe.db.sql("""select name from `tabProject`
-				where name = %s and (customer = %s or customer is null or customer = '')""",
-				(self.project, self.customer))
-			if not res:
-				throw(_("Customer {0} does not belong to project {1}").format(self.customer,self.project))
+	# def validate_proj_cust(self):
+	# 	"""check for does customer belong to same project as entered.."""
+	# 	if self.project and self.customer:
+	# 		res = frappe.db.sql("""select name from `tabProject`
+	# 			where name = %s and (customer = %s or customer is null or customer = '')""",
+	# 			(self.project, self.customer))
+	# 		if not res:
+	# 			throw(_("Customer {0} does not belong to project {1}").format(self.customer,self.project))
 
 	def validate_pos(self):
 		if flt(self.paid_amount) + flt(self.write_off_amount) \
